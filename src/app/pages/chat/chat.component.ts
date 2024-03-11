@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { AfterViewInit, Component } from '@angular/core';
 import { MuseumComponent } from '../../icons/museum/museum.component';
 import { ArrowLeftComponent } from '../../icons/arrow-left/arrow-left.component';
 import { ChatSuggestionsComponent } from '../../components/chat-suggestions/chat-suggestions.component';
@@ -28,16 +28,19 @@ import { SendComponent } from '../../components/send/send.component';
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.scss'
 })
-export class ChatComponent {
+export class ChatComponent implements AfterViewInit {
 
   messages: Message[] = [];
   chatForm!: FormGroup;
 
   constructor(private serivce:MessageService) {
-    this.messages = JSON.parse(localStorage.getItem("messages") ?? "[]");
     this.chatForm = new FormGroup({
       message: new FormControl('', [Validators.required])
     });
+  }
+  
+  ngAfterViewInit(): void {
+    this.messages = JSON.parse(localStorage.getItem("messages") ?? "[]");
   }
 
   updateLocalStorage(){
