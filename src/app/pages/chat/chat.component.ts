@@ -7,6 +7,8 @@ import { Message } from '../../types/message.type';
 import { ChatDialogComponent } from '../../components/chat-dialog/chat-dialog.component';
 import { MessageService } from '../../services/message.service';
 import { HttpClientModule } from '@angular/common/http';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { SendComponent } from '../../components/send/send.component';
 
 @Component({
   selector: 'app-chat',
@@ -15,8 +17,10 @@ import { HttpClientModule } from '@angular/common/http';
     CommonModule,
     MuseumComponent,
     ArrowLeftComponent,
+    SendComponent,
     ChatSuggestionsComponent,
     ChatDialogComponent,
+    ReactiveFormsModule,
   ],
   providers: [
     MessageService,
@@ -26,33 +30,44 @@ import { HttpClientModule } from '@angular/common/http';
 })
 export class ChatComponent {
 
-  messages: Message[] = JSON.parse(localStorage.getItem("messages") ?? "[]");
+  messages: Message[] = [];
+  chatForm!: FormGroup;
 
-  constructor(private serivce:MessageService) {}
-
-  updateLocalStorage(){
-      localStorage.setItem('messages', JSON.stringify(this.messages));
+  constructor(private serivce:MessageService) {
+    this.messages = JSON.parse(localStorage.getItem("messages") ?? "[]");
+    this.chatForm = new FormGroup({
+      message: new FormControl('', [Validators.required])
+    });
   }
 
-  sendSuggestedQuestion(question: string){
+  updateLocalStorage(){
+    localStorage.setItem("messages", JSON.stringify(this.messages))
+  }
+
+  submit(){
+    this.sendNewMessage(this.chatForm.value.message);
+    this.chatForm.reset();
+  }
+
+  sendNewMessage(question: string){
     this.messages.push({
       type: 'request',
-      message: question,
-    });
-    this.updateLocalStorage();
-    this.sendMessage(question);
+      message: question
+    })
+
+    this.updateLocalStorage()
+    this.sendMessage(question)
   }
 
   sendMessage(message: string){
     this.serivce.send(message).subscribe({
       next: (body) => {
         this.messages.push({
-          type: 'response',
+          type: "response",
           message: body.response
         })
-        this.updateLocalStorage();
+        this.updateLocalStorage()
       }
-    });
+    })
   }
-
 }
